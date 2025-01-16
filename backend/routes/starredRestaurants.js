@@ -48,24 +48,93 @@ router.get("/", (req, res) => {
 /**
  * Feature 7: Getting a specific starred restaurant.
  */
+router.get("/", (req, res) => {
+  const { id } = req.params;
 
+  const restaurant = STARRED_RESTAURANTS.find(
+    (restaurant) => restaurant.id === id
+  );
 
+  if (!restaurant) {
+    res.status(400);
+    return new Error("Such a restaurant doesn't exist.");
+  }
+
+  res.json(restaurant);
+});
 
 /**
  * Feature 8: Adding to your list of starred restaurants.
  */
 
+router.post("/", (req, res) => {
+  const { body } = req;
+  const { id } = body;
 
+  const restaurant = ALL_RESTAURANTS.find((restaurant) => restaurant.id === id);
+
+  if (!restaurant) {
+    res.status(400);
+    return new Error("Such a restaurant doesn't exist.");
+  }
+
+  const newId = uuidv4();
+
+  const newStarredRestaurant = {
+    id: newId,
+    restaurantId: restaurant.id,
+    comment: null,
+  };
+
+  STARRED_RESTAURANTS.push(newStarredRestaurant);
+  res.status(200).send({
+    id: newStarredRestaurant.id,
+    comment: newStarredRestaurant.comment,
+    name: restaurant.name,
+  });
+});
 
 /**
  * Feature 9: Deleting from your list of starred restaurants.
  */
 
+router.delete("/:id", (req, res) => {
+  const { id } = req.params;
+
+  const newListStarredRestaurants = STARRED_RESTAURANTS.filter(
+    (restaurant) => restaurant.id !== id
+  );
+
+  if (STARRED_RESTAURANTS.length === newListStarredRestaurants.length) {
+    res.status(404);
+    return new Error("Such a restaurant doesn't exist");
+  }
+
+  STARRED_RESTAURANTS = newListStarredRestaurants;
+
+  res.status(200);
+});
 
 /**
  * Feature 10: Updating your comment of a starred restaurant.
  */
 
+router.put("/:id", (req, res) => {
+  const { id } = req.params;
+  const { newComment } = req.body;
 
+  const restaurant = STARRED_RESTAURANTS.find(
+    (restaurant) => restaurant.id === id
+  );
+
+  if (!restaurant) {
+    res.status(400);
+    return new Error("Such a restaurant doesn't exist.");
+  }
+
+  restaurant.comment = newComment;
+
+  res.status(200);
+});
 
 module.exports = router;
